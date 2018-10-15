@@ -1,0 +1,267 @@
+swagger: "2.0"
+info:
+  version: "0.0.1"
+  title: Netflix API
+# during dev, should point to your local machine
+host: localhost:10010
+# basePath prefixes all resource paths 
+basePath: /
+# 
+schemes:
+  # tip: remove http to make production-grade
+  - http
+  # - https
+# format of bodies a client can send (Content-Type)
+consumes:
+  - application/json
+# format of the responses to the client (Accepts)
+produces:
+  - application/json
+tags:
+  - name: 'Users'
+    description: Operations about Netflix Users
+  - name: 'Authentication'
+    description: Authentication operations
+  - name: 'Videos'
+    description: Operations about Netflix Videos
+paths:
+  /users:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: users
+    post:
+      description: Creates a new user with a pair of credentials
+      # used as the method name of the controller
+      operationId: createUser
+      tags:
+      - "Users"
+      parameters:
+        - name: user
+          in: body
+          description: The user to create
+          required: true
+          schema:
+            $ref: "#/definitions/User"
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/CreateUserResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /authentication/login:
+    x-swagger-router-controller: authentication
+    post:
+      description: Authenticates a user with a pair of credentials and returns a sessionID
+      operationId: login
+      tags:
+      - "Authentication"
+      parameters:
+        - name: credentials
+          in: body
+          description: Credentials to authentication the user with
+          required: true
+          schema:
+            $ref: "#/definitions/Credentials"
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/AuthenticationResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /authentication/logout:
+    x-swagger-router-controller: authentication
+    get:
+      description: Authenticates a user with a pair of credentials and returns a sessionID
+      operationId: logout
+      tags:
+      - "Authentication"
+      parameters:
+        - name: x-session-id
+          in: header
+          description: Session ID
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/AuthenticationResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /videos:
+    x-swagger-router-controller: videos
+    get:
+      description: Find a video based on its title
+      operationId: findVideo
+      tags:
+      - "Videos"
+      parameters:
+        - name: title
+          in: query
+          description: Video Title
+          required: true
+          type: string
+        - name: x-session-id
+          in: header
+          description: Session ID
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/Video"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /videos/{videoId}/download:
+    get:
+      description: Download a video to the user's queue
+      operationId: downloadVideo
+      tags:
+      - "Videos"
+      parameters:
+        - name: videoId
+          in: path
+          description: Video ID
+          required: true
+          type: string
+        - name: x-session-id
+          in: header
+          description: Session ID
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/Video"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse" 
+  /videos/queue:
+    x-swagger-router-controller: videos
+    get:
+      description: Find all videos in the user's queue
+      operationId: getQueue
+      tags:
+      - "Videos"
+      parameters:
+        - name: x-session-id
+          in: header
+          description: Session ID
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            type: array
+            items:
+              # a pointer to a definition
+              $ref: "#/definitions/Video"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse" 
+  /swagger:
+    x-swagger-pipe: swagger_raw
+# complex objects have schema definitions
+definitions:
+  User:
+    required:
+      - username
+      - password
+    properties:
+      username:
+        type: string
+        example: 'jwalker'
+      password:
+        type: string
+        example: 'supersecret'
+      fullname:
+        type: string
+        example: 'Johnny Walker'
+  CreateUserResponse:
+    properties:
+      _id:
+        type: string
+        example: '123'
+  Credentials:
+    required:
+      - username
+      - password
+    properties:
+      username:
+        type: string
+        example: 'jwalker'
+      password:
+        type: string
+        example: 'supersecret'
+  AuthenticationResponse:
+    required:
+      - sessionID
+    properties:
+      sessionID:
+        type: string
+        example: 'axd43xs'
+  Video:
+    required:
+      - title
+      - _id
+    properties:
+      _id:
+        type: string
+        example: '12'
+      title:
+        type: string
+        example: 'Avengers Infinity War'
+      coverPhotoUrl:
+        type: string
+        example: 'https://m.media-amazon.com/images/M/MV5BMjMxNjY2MDU1OV5BMl5BanBnXkFtZTgwNzY1MTUwNTM@._V1_.jpg'
+  ErrorResponse:
+    required:
+      - message
+    properties:
+      message:
+        type: string
