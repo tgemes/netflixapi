@@ -7,8 +7,11 @@ module.exports = app; // for testing
 var cors = require('cors');
 app.use(cors());
 
+const swaggerSecurity = require('./api/helpers/swagger_security.js');
+
 var config = {
-  appRoot: __dirname // required config
+  appRoot: __dirname, // required config
+  swaggerSecurityHandlers: swaggerSecurity.swaggerSecurityHandlers
 };
 
 SwaggerExpress.create(config, function(err, swaggerExpress) {

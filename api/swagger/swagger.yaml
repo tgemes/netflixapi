@@ -24,6 +24,11 @@ tags:
     description: Authentication operations
   - name: 'Videos'
     description: Operations about Netflix Videos
+securityDefinitions:
+  ApiKeyAuth:
+    type: apiKey
+    in: header
+    name: X-Session-ID
 paths:
   /users:
     # binds a127 app logic to a route
@@ -116,15 +121,12 @@ paths:
       operationId: findVideo
       tags:
       - "Videos"
+      security:
+      - ApiKeyAuth: []
       parameters:
         - name: title
           in: query
           description: Video Title
-          required: true
-          type: string
-        - name: x-session-id
-          in: header
-          description: Session ID
           required: true
           type: string
       responses:
